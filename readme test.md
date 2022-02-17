@@ -9,38 +9,55 @@
 
 
 ```mermaid
-flowchart LR
-    modelset2-->py21
-    modelset1-->py22
-    py21 --> py22
-    py3 -->|tuned parameters|py22
+flowchart TB
+    FE --> py
     subgraph py[Model using pycaret]
       subgraph py1[Initialize pycaret]
         py11[setup]
       end
       subgraph modelset[Model Settings]
         subgraph modelset1[ML algorithm]
-          modelset11[XGBoost]
+          modelset11[LightGBM]
+          modelset12[XGBoost]
+          modelset13[CatBoost]
+          modelset14[Random Forest]
         end
+        modelset2 --> py21
+        modelsette-->py21
         subgraph modelset2[Validation Settings]
           modelset21[KFold]
           modelset22[No of Folds =10]
         end
+        subgraph modelsette[Target Encoding]
+          modelsette1[user_id target enc]
+          modelsette2[video_id target enc]
+          modelsette3[category_id target enc]
+        end
       end
+      py1 --> py2
+      py2 --> sel{Select Model}
+      sel --> py3
+      py3 -->|tuned parameters|py4
       subgraph py2[Evaluate Model]
-        subgraph py21[Train Validation Split]
-          py211[(Train Set)]
-          py212[(Validation Set)]
-         end
-         py22[[Train Model]]
-       end
+          subgraph py21[Train Validation Split]
+            py211[(Train Set)]
+            py212[(Validation Set)]
+          end
+          subgraph py22[Train Models]
+            py221[[Train Model]]
+            py222[[Train Model]]
+            py223[[Train Model]]
+            py224[[Train Model]]
+          end
+      end
       subgraph py3[Tune Model]
         py31[create_model]
         py32[tune_model for 100 iterations]
       end    
       subgraph py4[Final Model]
-        py41[finalize_model]
-        py42[test predictions]
+        py41[(Train Set Full)]
+        py42[finalize_model]
+        py43[test predictions]
       end       
     end
     subgraph FE[Feature Engineering]
