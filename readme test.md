@@ -33,14 +33,12 @@ flowchart TB
             py224[[Train Model]]
           end
       end
-      subgraph py3[Tune Model]
-        py31[create_model]
-        py32[tune_model for 100 iterations]
+      subgraph py3[Tune Model - XGBoost]
+        py31[Train Model] --> py32[Tune Model for 100 iterations]
       end    
       subgraph py4[Final Model]
         py41[(Train Set Full)]
-        py42[finalize_model]
-        py43[test predictions]
+        py42[Train Model] --> py43[Test predictions]
       end       
       subgraph modelset[Model Settings]
         subgraph modelset1[ML algorithm]
