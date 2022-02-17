@@ -12,29 +12,12 @@
 flowchart TB
     FE --> py
     subgraph py[Model using pycaret]
+      direction TB
       subgraph py1[Initialize pycaret]
         py11[setup]
       end
-      subgraph modelset[Model Settings]
-        subgraph modelset1[ML algorithm]
-          modelset11[LightGBM]
-          modelset12[XGBoost]
-          modelset13[CatBoost]
-          modelset14[Random Forest]
-        end
-        modelset2 --> py21
-        modelsette-->py21
-        subgraph modelset2[Validation Settings]
-          modelset21[KFold]
-          modelset22[No of Folds =10]
-        end
-        subgraph modelsette[Target Encoding]
-          modelsette1[user_id target enc]
-          modelsette2[video_id target enc]
-          modelsette3[category_id target enc]
-        end
-      end
-      py1 --> py2
+      modelset --> py2
+      py1 --> modelset
       py2 --> sel{Select Model}
       sel --> py3
       py3 -->|tuned parameters|py4
@@ -59,6 +42,24 @@ flowchart TB
         py42[finalize_model]
         py43[test predictions]
       end       
+      subgraph modelset[Model Settings]
+        subgraph modelset1[ML algorithm]
+          modelset11[LightGBM]
+          modelset12[XGBoost]
+          modelset13[CatBoost]
+          modelset14[Random Forest]
+        end
+
+        subgraph modelset2[Validation Settings]
+          modelset21[KFold]
+          modelset22[No of Folds =10]
+        end
+        subgraph modelsette[Target Encoding]
+          modelsette1[user_id target enc]
+          modelsette2[video_id target enc]
+          modelsette3[category_id target enc]
+        end
+      end
     end
     subgraph FE[Feature Engineering]
     direction TB
