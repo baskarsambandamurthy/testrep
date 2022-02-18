@@ -167,7 +167,55 @@ setup(     train[features],
         )
 ```
 
+### Evaluate Model
+In the implementation, 4 models are evaluated using the split train and validation datasets with 10 folds.Among the models, there are 3 boosting algorithms and 1 bagging algorithm.
+<br>
+code to train LightGBM using pycaret:<br>
+```python
+lgbm = create_model('lightgbm')
+```
+code to train XGBoost using pycaret:<br>
+```python
+xgbm = create_model('xgboost')
+```
+code to train Catboost using pycaret:<br>
+```python
+catboost = create_model('catboost')
+```
+code to train Random Forest using pycaret:<br>
+```python
+rf = create_model('rf')
+```
 
+### Select Model
+ - Based on the results from the training of the above 4 models, xgboost is much faster when executed in GPU and while at the same time, it yields almost same prediction accuracy compared to other models. Hence the **XGBoost** model is selected for further tuning. Since the model tuning would take longer time as it need to train the model for different parameter combinations and hence the criteria for model selection gives slightly higher importance to execution speed.
+  
+### Tune Model
+ - The selected `XGBoost` model training is repeated for around 100 times with different set of parameters. 
+ - The parameter optimization is done by using pycaret separate api and using the scikit-optimize package and bayesian technique. The bayesian technique results in faster convergence of optimal results due to its past learning from parameter values compared to random parameter selection.
+
+pycaret code to tune XGBoost :<br>
+```python
+tuned_xgbm = tune_model('xgboost',
+                        search_library='scikit-optimize',
+                        n_iter=100)
+``` 
+
+### Final Model
+ -  In this step, the XGBoost model is trained using full training set with its tuned model parameters and number of estimators. 
+ -  Then the final model is used to perform predictions on the test dataset
+
+code for final model using pycaret :<br>
+```python
+final_model = finalize_model(tuned_xgbm)
+```
+
+code for test predictions using pycaret  :<br>
+```python
+test_preds = predict_model(final_model, data=test)
+```
+ 
+ 
 
 
 
