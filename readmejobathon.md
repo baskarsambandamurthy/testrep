@@ -83,6 +83,28 @@ flowchart TB
   end
   EDA -->FE 
 ````
+## EDA
+ -  For EDA, package `pandas_profiling` is used which provides descriptive statistics, histogram, missing values, duplicates for each of the feature in the given dataset.
+ -  Profile summary has been generated for both train and test data.
+
+code to generate EDA using pandas profiling<br>
+```python
+import pandas_profiling as pp
+pp.ProfileReport(train)
+```
+
+- Findings are below:
+
+| Findings|  Suggestions
+|----------------------|-------------------------------|
+| There are no missing values in any of the columns        | Missing value imputation is not needed
+| Target column engagement_score contains float values | So training objective should be regression
+| Numeric columns are age, followers, views | During model training, these columns to be considered as numerical types 
+| categorical columns are user_id, video_id, category_id, profession and gender | These columns require transformations so that it could be effectively used by the machine learning algorithms. 
+|  profession and gender have text values | These columns have to be transformed with numeric values. 
+| user_id column contains 27000+ unique values         | So high cardinality treatment need to be performed on user_id column
+|All user_ids in test set exist in the training set.        | So user_id in training would play important role during training
+| Train set contains list of specific user and video combinations and the combinations of video id and user id in train set   | The user_id and video_id combination would not have any effect on model training.
 
 ## Feature Engineering
 
@@ -117,7 +139,7 @@ List of feature aggregations are as below
 
 #### Usage of original user_id
 
-= Original user_id field is also used as a feature besides the target encoded value of the user_id field
+Original user_id field is also used as a feature besides the target encoded value of the user_id field
 
 ## Model Build - Train - Predict
 
