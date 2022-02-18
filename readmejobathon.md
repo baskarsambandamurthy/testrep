@@ -8,7 +8,7 @@
 ## Key points for top score achievement
 
 1. Understanding of high cardinality of user_id field
-2. Test and Train similarity differences from EDA
+2. Test - Train similarity and differences from EDA
 3. Target Encoding of the user_id field
 4. Tuning parameters of Gradient Boosting algorithm XGBoost
 5. Test Predictions using full train data set with the iterations 
@@ -104,6 +104,9 @@ pp.ProfileReport(train)
 |  profession and gender have text values | These columns have to be transformed with numeric values. 
 | user_id column contains 27000+ unique values         | So high cardinality treatment need to be performed on user_id column
 |All user_ids in test set exist in the training set.        | So user_id in training would play important role during training
+| video_id column contains 175 unique values         | So either high cardinality treatment or one hot encoding can be performed on video_id column
+| train and test have video_id column with 175 and 128 unique values respectively       | Training on those values which are not available in test dataset may not be useful to test predictions. 
+| train and test have category_id column with 47 and 23 unique values respectively       | Training on those values which are not available in test dataset may not be useful to test predictions. 
 | Train set contains list of specific user and video combinations and the combinations of video id and user id in train set   | The user_id and video_id combination would not have any effect on model training.
 
 ## Feature Engineering
@@ -121,7 +124,7 @@ pp.ProfileReport(train)
 > **Note**: If Target Encoding is performed before cross validation (i.e) performed for entire train set and then if the cross validation is performed using such encoding, then it would result in target leak which means that the partial train set of each fold has got the target leak of the validation set. This would result in very good validation score and poor test score.
 - As pycaret package is used for model training and cross validation, the target encoding is mentioned as custom_pipeline parameter for the pycaret setup.
 > **Note**: `ColumnTransformer()` is used as pipeline transformer on the columns to transform target encoding and `TargetEncoder()` is used as the actual transformer for target encoding.
-- Features `video_id` and `category_id` are also converted using target encoding
+- Since some of the video_id  values in train (around 50+) and category_id values do not present in test, it is recommended to perform target encoding on the features `video_id` and `category_id` instead of one hot encoding. 
 
 #### Feature Aggregations
 
@@ -139,7 +142,7 @@ List of feature aggregations are as below
 
 #### Usage of original user_id
 
-Original user_id field is also used as a feature besides the target encoded value of the user_id field
+As all user_id in test dataset belongs to one of the user_id in training set, original user_id field could also be useful for machine learning. Hence the original user_id is also used as a feature besides the target encoded value of the user_id field
 
 ## Model Build - Train - Predict
 
