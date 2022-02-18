@@ -160,11 +160,13 @@ As all user_id in test dataset belongs to one of the user_id in training set, or
 - As pycaret package is used for model training and cross validation, the target encoding is mentioned as custom_pipeline parameter for the pycaret setup.
 > **Note**: `ColumnTransformer()` is used as pipeline transformer on the columns to transform target encoding and `TargetEncoder()` is used as the actual transformer for target encoding.
 - Since some of the video_id  values in train (around 50+) and category_id values do not present in test, it is recommended to perform target encoding on the features `video_id` and `category_id` instead of one hot encoding. 
-- Since there are lot of user_id with 2 records, it would be better to learn from those user_ids as well and hence min_samples_leaf is set to 2.
+- Since there are lot of user_id with 2 records, it would be better to learn from those user_ids as well and hence `min_samples_leaf` parameter is set to 2.
 
 > Note: min_samples_leaf gives importance to those set of categorical values for which the number of records exceeds or equal to the mentioned parameter value.It define a threshold at which overall target mean and the individual target mean (for a given category value) have the same weight. Below the threshold overall target mean becomes more important and above individual target mean becomes more important. 
 
-- smoothing parameter is set a lesser value (0.1 in this implementation) since most of the user_ids have record count ranging from 2 to 10 only.
+- `smoothing` parameter is set a lesser value (0.1 in this implementation) since most of the user_ids have record count ranging from 2 to 10 only.
+
+> Note: `smoothing` defines the weight proportion of the individual target mean against the overall target mean in the target encoding calculation. 
 
 
 
@@ -202,25 +204,33 @@ setup(     train[features],
 ```
 
 ### Evaluate Model
-In the implementation, 4 models are evaluated using the split train and validation datasets with 10 folds.Among the models, there are 3 boosting algorithms and 1 bagging algorithm.
+  -  In the implementation, 4 models are evaluated using the split train and validation datasets with 10 folds.Among the models, there are 3 boosting algorithms and 1 bagging algorithm.
+
 > Note: The pipeline transformer that are mentioned in `custom_pipeline` in the setup() function are processed during this step. (i.e) in this case, target encoding transformation would be processed in the model evaluation.
+
+  - Evaluate Model code
 <br>
 code to train LightGBM using pycaret:<br>
+
 ```python
 lgbm = create_model('lightgbm')
 ```
 code to train XGBoost using pycaret:<br>
+
 ```python
 xgbm = create_model('xgboost')
 ```
 code to train Catboost using pycaret:<br>
+
 ```python
 catboost = create_model('catboost')
 ```
 code to train Random Forest using pycaret:<br>
+
 ```python
 rf = create_model('rf')
 ```
+
 
 ### Select Model
  - Based on the results from the training of the above 4 models, xgboost is much faster when executed in GPU and while at the same time, it yields almost same prediction accuracy compared to other models. Hence the **XGBoost** model is selected for further tuning. Since the model tuning would take longer time as it need to train the model for different parameter combinations and hence the criteria for model selection gives slightly higher importance to execution speed.
@@ -252,13 +262,13 @@ test_preds = predict_model(final_model, data=test)
 
 ## References
 
-- pycaret package api documentation for regression
+- `pycaret` package api documentation for regression <br>
 <a href='https://pycaret.readthedocs.io/en/latest/api/regression.html'>pycaret regression</a>
-- pycaret tutorial with examples
+- `pycaret` tutorial with examples <br>
 <a href='https://pycaret.readthedocs.io/en/latest/tutorials.html'>pycaret tutorial</a>
-- target encoding api
+- `target encoding` api <br>
 <a href='https://contrib.scikit-learn.org/category_encoders/targetencoder.html'>target encoding</a>
-- pandas profiling api
+- `pandas profiling` api <br>
 <a href='https://pandas-profiling.github.io/pandas-profiling/docs/master/rtd/'>pandas profiling api</a>
 
  
