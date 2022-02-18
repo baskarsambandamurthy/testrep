@@ -118,14 +118,6 @@ pp.ProfileReport(train)
 
 ### Advanced Feature Engineering
 
-#### Target Encoding
-- The `user_id` categorical field has high cardinality (more than 20000 unique values in train) and if this categorical field is converted using one hot encoding, it would generate around 20000 features and this would consume huge memory and cpu. The optimaly techinique to utilize this field is to apply target encoding on this field.
-- Target Encoding should not be performed before cross validation and it has been performed during cross validation.
-> **Note**: If Target Encoding is performed before cross validation (i.e) performed for entire train set and then if the cross validation is performed using such encoding, then it would result in target leak which means that the partial train set of each fold has got the target leak of the validation set. This would result in very good validation score and poor test score.
-- As pycaret package is used for model training and cross validation, the target encoding is mentioned as custom_pipeline parameter for the pycaret setup.
-> **Note**: `ColumnTransformer()` is used as pipeline transformer on the columns to transform target encoding and `TargetEncoder()` is used as the actual transformer for target encoding.
-- Since some of the video_id  values in train (around 50+) and category_id values do not present in test, it is recommended to perform target encoding on the features `video_id` and `category_id` instead of one hot encoding. 
-
 #### Feature Aggregations
 
 - User Groupings: Count of videos and Count of categories grouped per user are generated. 
@@ -153,12 +145,29 @@ As all user_id in test dataset belongs to one of the user_id in training set, or
     - XGBoost
     - CatBoost
     - Random Forest     
-2. One of the above Machine Learning algorithm is selected based on the criteria of model execution speed and the predictability on GPU device.
-3. In this dataset, XGBoost model has been selected since it is 4 times faster than other boosting models when executed in GPU compared to others while at the same time it yields almost similar predictability as other boosting models like LightGBM and Catboost.
-4. Evaluated XGBoost model is tuned for optimal parameters for which the validation score yields better results.
-5. Then Model is trained using full training set with the tuned model parameters and number of estimators. This model is called `Final Model`
+2. Target Encoding on user_id, video_id and category_id features are performed for each fold of cross validation of the above training models.
+3. One of the above Machine Learning algorithm is selected based on the criteria of model execution speed and the predictability on GPU device.
+4. In this dataset, XGBoost model has been selected since it is 4 times faster than other boosting models when executed in GPU compared to others while at the same time it yields almost similar predictability as other boosting models like LightGBM and Catboost.
+5. Evaluated XGBoost model is tuned for optimal parameters for which the validation score yields better results.
+6. Then Model is trained using full training set with the tuned model parameters and number of estimators. This model is called `Final Model`
 > **Note**: In the `Final Model`, full training set is used which is different from cross validation where only partial training set is used for each fold.
-6. Predictions of the Test set are performed using the trained `Final Model`.
+7. Predictions of the Test set are performed using the trained `Final Model`.
+
+#### Target Encoding
+- The `user_id` categorical field has high cardinality (more than 20000 unique values in train) and if this categorical field is converted using one hot encoding, it would generate around 20000 features and this would consume huge memory and cpu. The optimaly techinique to utilize this field is to apply target encoding on this field.
+- Target Encoding should not be performed before cross validation and it has been performed during cross validation.
+> **Note**: If Target Encoding is performed before cross validation (i.e) performed for entire train set and then if the cross validation is performed using such encoding, then it would result in target leak which means that the partial train set of each fold has got the target leak of the validation set. This would result in very good validation score and poor test score.
+- As pycaret package is used for model training and cross validation, the target encoding is mentioned as custom_pipeline parameter for the pycaret setup.
+> **Note**: `ColumnTransformer()` is used as pipeline transformer on the columns to transform target encoding and `TargetEncoder()` is used as the actual transformer for target encoding.
+- Since some of the video_id  values in train (around 50+) and category_id values do not present in test, it is recommended to perform target encoding on the features `video_id` and `category_id` instead of one hot encoding. 
+- Since there are lot of user_id with 2 records, it would be better to learn from those user_ids as well and hence min_samples_leaf is set to 2.
+
+> Note: min_samples_leaf gives importance to those set of categorical values for which the number of records exceeds or equal to the mentioned parameter value.It define a threshold at which overall target mean and the individual target mean (for a given category value) have the same weight. Below the threshold overall target mean becomes more important and above individual target mean becomes more important. 
+
+- smoothing parameter is set a lesser value (0.1 in this implementation) since most of the user_ids have record count ranging from 2 to 10 only.
+
+
+
 
 ### Initialize
   - Initializes training and target data in the pycaret package. Note that the target encoding process to be specified as `custom_pipeline` argument in the pycaret initialization. When machine supports gpu, set gpu flag to speed up execution of the machine learning algorithms. <br>
@@ -194,6 +203,7 @@ setup(     train[features],
 
 ### Evaluate Model
 In the implementation, 4 models are evaluated using the split train and validation datasets with 10 folds.Among the models, there are 3 boosting algorithms and 1 bagging algorithm.
+> Note: The pipeline transformer that are mentioned in `custom_pipeline` in the setup() function are processed during this step. (i.e) in this case, target encoding transformation would be processed in the model evaluation.
 <br>
 code to train LightGBM using pycaret:<br>
 ```python
@@ -239,7 +249,18 @@ code for test predictions using pycaret  :<br>
 ```python
 test_preds = predict_model(final_model, data=test)
 ```
- 
+
+## References
+
+- pycaret package api documentation for regression
+<a href='https://pycaret.readthedocs.io/en/latest/api/regression.html'>pycaret regression</a>
+- pycaret tutorial with examples
+<a href='https://pycaret.readthedocs.io/en/latest/tutorials.html'>pycaret tutorial</a>
+- target encoding api
+<a href='https://contrib.scikit-learn.org/category_encoders/targetencoder.html'>target encoding</a>
+- pandas profiling api
+<a href='https://pandas-profiling.github.io/pandas-profiling/docs/master/rtd/'>pandas profiling api</a>
+
  
 
 
